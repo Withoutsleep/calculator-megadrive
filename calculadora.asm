@@ -19,8 +19,15 @@ Inicio:
     move.w #0,($00FF0010)   ; Primer número
     move.w #0,($00FF0012)   ; Segundo número
 
-EsperarBoton:
     move.b  #$40,($00A10009) ; Inicializa el mando
+
+BucleEspera:
+    dbra d7,BucleEspera
+
+EsperarBoton:
+
+    nop
+    nop
     move.b  ($00A10003),d0   ; Lee los botones reales
     andi.b  #%01000000,d0    ; Compara si has tocado el boton A
     beq     HacerSuma
