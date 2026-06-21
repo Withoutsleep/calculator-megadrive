@@ -5,13 +5,13 @@
 VDP_CONTROL EQU $00C00004
 VDP_DATA    EQU $00C00000
 
-    org $00000000           ; El código empieza en la dirección 0 de la ROM
+    org $00000000           ; El código empieza en la dirección 0 de la ROM  ; Para resumir un poco, todo esto es la mierda de la cabezera, sino, no funciona y te jodes xd (me cago en todo)
 
     dc.l $00FFFE00          ; 1. Dirección inicial de la pila (Stack Pointer)
     dc.l Inicio             ; 2. Dirección donde empieza el programa real
 
 Inicio:
-    ; PRUEBA DE COLOR: Forzamos pantalla púrpura inmediatamente al arrancar
+    ; PRUEBA DE COLOR: Forzamos pantalla morada inmediatamente al arrancar
     move.l #$C0000000,(VDP_CONTROL)  
     move.w #$082A,(VDP_DATA)
 
@@ -81,7 +81,7 @@ EsperarAsoltarLaRIGHT:
 
 HacerSuma:
     move.l  #$C0000000,(VDP_CONTROL)  
-    move.w  #$082A,(VDP_DATA)
+    move.w  #$00A0,(VDP_DATA)
     move.w  ($00FF0010),d0
     move.w  ($00FF0012),d1
     add.w   d0,d1
@@ -97,7 +97,7 @@ FinDelPrograma:
     bra.s   FinDelPrograma   ; Bucle muerto por si acaso
 
 ; =========================================================================
-; RELLENO DE SEGURIDAD AL FINAL DEL ARCHIVO
+; |                             RELLENO XD                                |
 ; =========================================================================
-    org     $00000200        ; Fuerza al archivo a medir 512 bytes exactos
+    org     $00000200        ; Fuerza al archivo a medir 512 bytes, ni uno mas, ni uno menos
     dc.b    0                ; Un byte de cierre
