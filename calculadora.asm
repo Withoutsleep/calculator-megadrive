@@ -13,8 +13,8 @@
 VDP_CONTROL EQU $00C00004   ; Esto se utiliza para poder llamar de un determinado nombre una direccion en la memoria
 VDP_DATA    EQU $00C00000   
 
-    move.w #0, ($00FF0010) ; Aqui dejaré el primer numero (que de momento es 30 pero a futuro se podra cambiar) ;Para restaurar los numeros
-    move.w #0, ($00FF0012) ; Aqui el segundo numero
+    move.w #0,($00FF0010) ; Aqui dejaré el primer numero (que de momento es 30 pero a futuro se podra cambiar) ;Para restaurar los numeros
+    move.w #0,($00FF0012) ; Aqui el segundo numero
 
 EsperarBoton:
 
@@ -53,7 +53,7 @@ EsperarASoltarLaUP:
 BajarNumero:
     subq.w #1,($00FF0010)
 
-EsperarAsoltarLaDOWN:
+EsperarASoltarLaDOWN:
     move.b  ($00A10003),d0        ; Lee los botones 
     andi.b  #%00000010,d0
     beq EsperarASoltarLaDOWN
@@ -66,7 +66,7 @@ EsperarAsoltarLaLEFT:
     move.b  ($00A10003),d0        ; Lee los botones 
     andi.b  #%00000100,d0
     beq EsperarAsoltarLaLEFT
-    bra.s EsperarBoton
+    bra EsperarBoton
 
 DerechearNumero:
     addq.w #1,($00FF0012)
@@ -75,7 +75,7 @@ EsperarAsoltarLaRIGHT:
     move.b  ($00A10003),d0        ; Lee los botones 
     andi.b  #%00000100,d0
     beq EsperarAsoltarLaRIGHT
-    bra.s EsperarBoton
+    bra EsperarBoton
 
 HacerSuma:
     move.l #$C0000000,(VDP_CONTROL)  ; Es necesario llamar a esta funcion para poder "activar" el canal de control
