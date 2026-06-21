@@ -10,86 +10,101 @@
 ; |       C       |            #%00100000                                  |
 ;  =========================================================================
 
-VDP_CONTROL EQU $00C00004   ; Esto se utiliza para poder llamar de un determinado nombre una direccion en la memoria
-VDP_DATA    EQU $00C00000   
+VDP_CONTROL EQU $00C00004
+VDP_DATA    EQU $00C00000
 
-    move.w #0,($00FF0010) ; Aqui dejaré el primer numero (que de momento es 30 pero a futuro se podra cambiar) ;Para restaurar los numeros
-    move.w #0,($00FF0012) ; Aqui el segundo numero
+    org $00000000           ; El código empieza en la dirección 0 de la ROM
 
-EsperarBoton:
+    dc.l $00FFFE00          ; 1. Dirección inicial de la pila (Stack Pointer)
+    dc.l Inicio             ; 2. Dirección donde empieza el programa real
 
-    move.b  #$40,($00A10009) ; Inicializa el mando
-    move.b  ($00A10003),d0 ; Lee los botones reales
-    andi.b  #%01000000,d0   ; Compara si has tocado el boton A
-    beq HacerSuma
+Inicio:
+    ; Forzamos el color inmediatamente al arrancar
+    move.l #$C0000000,(VDP_CONTROL)  
+    move.w #$082A,(VDP_DATA)
 
-    move.b  ($00A10003),d0 ; Lee los botones reales
-    andi.b  #%00000001,d0   ; Compara si has tocado el boton UP
-    beq SubirNumero
+BucleInfinito:
 
-    move.b ($00A10003),d0 ; Lee los botones reales
-    andi.b  #%00000010,d0  ; Comprueba si has tocado el boton DOWN
-    beq BajarNumero
+    ; RELLENO DE SEGURIDAD:
+    ; Los emuladores odian los archivos de menos de 512 bytes. 
+    ; Esto rellena con ceros hasta alcanzar un tamaño que RetroArch acepte.
+    align 512
 
-    move.b ($00A10003),d0 ; Lee los botones reales
-    andi.b  #%00000100,d0  ; Comprueba si has tocado el boton LEFT
-    beq IzquierdearNumero
+    EsperarBoton:
 
-    move.b ($00A10003),d0 ; Lee los botones reales
-    andi.b  #%00001000,d0  ; Comprueba si has tocado el boton RIGHT
-    beq DerechearNumero
+        move.b  #$40,($00A10009) ; Inicializa el mando
+        move.b  ($00A10003),d0 ; Lee los botones reales
+        andi.b  #%01000000,d0   ; Compara si has tocado el boton A
+        beq HacerSuma
 
-    bra EsperarBoton  ; Repite el ciclo
+        move.b  ($00A10003),d0 ; Lee los botones reales
+        andi.b  #%00000001,d0   ; Compara si has tocado el boton UP
+        beq SubirNumero
 
-SubirNumero:
-    addq.w #1,($00FF0010)
+        move.b ($00A10003),d0 ; Lee los botones reales
+        andi.b  #%00000010,d0  ; Comprueba si has tocado el boton DOWN
+        beq BajarNumero
 
-EsperarASoltarLaUP:
-    move.b  ($00A10003),d0        ; Lee los botones 
-    andi.b  #%00000001,d0
-    beq EsperarASoltarLaUP
-    bra.s EsperarBoton
+        move.b ($00A10003),d0 ; Lee los botones reales
+        andi.b  #%00000100,d0  ; Comprueba si has tocado el boton LEFT
+        beq IzquierdearNumero
 
-BajarNumero:
-    subq.w #1,($00FF0010)
+        move.b ($00A10003),d0 ; Lee los botones reales
+        andi.b  #%00001000,d0  ; Comprueba si has tocado el boton RIGHT
+        beq DerechearNumero
 
-EsperarASoltarLaDOWN:
-    move.b  ($00A10003),d0        ; Lee los botones 
-    andi.b  #%00000010,d0
-    beq EsperarASoltarLaDOWN
-    bra.s EsperarBoton
+        bra EsperarBoton  ; Repite el ciclo
 
-IzquierdearNumero:
-    subq.w #1,($00FF0012)
+    SubirNumero:
+        addq.w #1,($00FF0010)
 
-EsperarAsoltarLaLEFT:
-    move.b  ($00A10003),d0        ; Lee los botones 
-    andi.b  #%00000100,d0
-    beq EsperarAsoltarLaLEFT
-    bra EsperarBoton
+    EsperarASoltarLaUP:
+        move.b  ($00A10003),d0        ; Lee los botones 
+        andi.b  #%00000001,d0
+        beq EsperarASoltarLaUP
+        bra.s EsperarBoton
 
-DerechearNumero:
-    addq.w #1,($00FF0012)
+    BajarNumero:
+        subq.w #1,($00FF0010)
 
-EsperarAsoltarLaRIGHT:
-    move.b  ($00A10003),d0        ; Lee los botones 
-    andi.b  #%00000100,d0
-    beq EsperarAsoltarLaRIGHT
-    bra EsperarBoton
+    EsperarASoltarLaDOWN:
+        move.b  ($00A10003),d0        ; Lee los botones 
+        andi.b  #%00000010,d0
+        beq EsperarASoltarLaDOWN
+        bra.s EsperarBoton
 
-HacerSuma:
-    move.l #$C0000000,(VDP_CONTROL)  ; Es necesario llamar a esta funcion para poder "activar" el canal de control
-    move.w  #$082A,(VDP_DATA)
-    move.w ($00FF0010),d0
-    move.w ($00FF0012),d1
-    add.w d0,d1
-    move.w d1,($00FF0000)
+    IzquierdearNumero:
+        subq.w #1,($00FF0012)
 
-EsperarASoltarLaA:
-    move.b  ($00A10003),d0        ; Lee los botones 
-    andi.b  #%01000000,d0
-    beq EsperarASoltarLaA
-    bne EsperarBoton
+    EsperarAsoltarLaLEFT:
+        move.b  ($00A10003),d0        ; Lee los botones 
+        andi.b  #%00000100,d0
+        beq EsperarAsoltarLaLEFT
+        bra EsperarBoton
 
-FinDelPrograma:
-    bra.s FinDelPrograma ; Bucle final
+    DerechearNumero:
+        addq.w #1,($00FF0012)
+
+    EsperarAsoltarLaRIGHT:
+        move.b  ($00A10003),d0        ; Lee los botones 
+        andi.b  #%00000100,d0
+        beq EsperarAsoltarLaRIGHT
+        bra EsperarBoton
+
+    HacerSuma:
+        move.l #$C0000000,(VDP_CONTROL)  ; Es necesario llamar a esta funcion para poder "activar" el canal de control
+        move.w  #$082A,(VDP_DATA)
+        move.w ($00FF0010),d0
+        move.w ($00FF0012),d1
+        add.w d0,d1
+        move.w d1,($00FF0000)
+
+    EsperarASoltarLaA:
+        move.b  ($00A10003),d0        ; Lee los botones 
+        andi.b  #%01000000,d0
+        beq EsperarASoltarLaA
+        bne EsperarBoton
+
+    FinDelPrograma:
+        bra.s FinDelPrograma ; Bucle final
+bra BucleInfinito     ; Evitamos que el procesador siga leyendo vacío
